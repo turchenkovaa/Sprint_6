@@ -1,0 +1,21 @@
+import pytest
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+from helpers.data import Urls
+
+
+@pytest.fixture
+def driver():
+    options = Options()
+    options.binary_location = '/usr/bin/firefox'
+    
+    driver = webdriver.Firefox(options=options)
+    driver.get(Urls.BASE_URL)
+    yield driver
+    driver.quit()
+
+
+driver = webdriver.Firefox(options=options)
+# Для корректного отображения аргументов в параметризированном тесте
+def pytest_make_parametrize_id(val):
+    return repr(val)
