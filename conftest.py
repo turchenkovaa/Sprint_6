@@ -6,10 +6,7 @@ from helpers.data import Urls
 
 @pytest.fixture
 def driver():
-    options = Options()
-    options.binary_location = '/usr/bin/firefox'
-    
-    driver = webdriver.Firefox(options=options)
+    driver = webdriver.Firefox()
     driver.get(Urls.BASE_URL)
     yield driver
     driver.quit()

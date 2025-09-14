@@ -31,14 +31,23 @@ class BasePage:
         """Поиск и ожидание элемента"""
         return self.wait_until_visible(locator, timeout=10)
 
-    def click_button(self, locator):
-        """Нажатие по элементу с fallback на JavaScript"""
-        element = self.find_and_wait_locator(locator)
-        try:
-            element.click()
-        except (ElementClickInterceptedException, ElementNotInteractableException, StaleElementReferenceException):
-            # Если обычный клик не работает, то используем JavaScript
-            self.driver.execute_script("arguments[0].click();", element)
+    def click_button(self, locator, retries=3, delay=0.5):
+        """Нажатие по элементу с fallback на JavaScript и обработкой stale элементов"""
+        for _ in range(retries):
+            try:
+                element = self.find_and_wait_locator(locator)
+                element.click()
+                return
+            except (ElementClickInterceptedException, ElementNotInteractableException):
+                try:
+                    self.driver.execute_script("arguments[0].click();", element)
+                    return
+                except StaleElementReferenceException:
+                    pass  # Элемент устарел — retry
+            except StaleElementReferenceException:
+                pass  # Элемент устарел — retry
+            time.sleep(delay)
+        raise Exception(f"Не удалось кликнуть по элементу с локатором {locator}")
 
     def send_keys_to_field(self, locator, text):
         """Очистить поле и ввести текст"""
@@ -64,7 +73,13 @@ class BasePage:
 
     def go_to_new_tab(self):
         """Ожидать появления новой вкладки"""
-        self.driver.switch_to.window(self.driver.window_handles[1])
+        # Открываем новую вкладку
+        self.driver.execute_script("window.open('');")
+        # Обновляем список окон
+        window_handles = self.driver.window_handles
+        # Переключаемся на последнюю вкладку
+        self.driver.switch_to.window(window_handles[-1])
+    
 
     def check_element(self, locator):
         """Проверка отображения элемента"""
@@ -86,10 +101,9 @@ class BasePage:
         """Выполнение JavaScript скрипта"""
         return self.driver.execute_script(script)
 
-    def blur_element_by_placeholder(self, placeholder_text):
-        """Убрать фокус с элемента по placeholder"""
-        script = f'document.querySelector("input[placeholder*=\\"{placeholder_text}\\"]").blur();'
-        self.execute_js_script(script)
+    def blur_element(self, element):
+        """Убрать фокус с переданного элемента через JS"""
+        self.execute_js_script("arguments[0].blur();", element)
 
     def hide_element_by_class(self, class_name):
         """Скрыть элемент по классу"""

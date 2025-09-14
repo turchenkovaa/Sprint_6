@@ -22,7 +22,7 @@ class Users:
         7: 'Позвоните, я открою',
     }
 
-
+EXPECTED_DOMAINS = ["dzen.ru", "yandex.ru"]
 class Urls:
     """
     Основные URL проекта для разных окружений

@@ -2,6 +2,7 @@ import allure
 from pages.main_page import HeaderPage, MainPage
 from pages.order_page import OrderPage
 from helpers.data import Users
+from helpers.data import EXPECTED_DOMAINS
 
 
 class TestLogos:
@@ -55,7 +56,7 @@ class TestLogos:
         
         # Проверка URL новой вкладки
         current_url = main_page.get_current_url()
-        assert "dzen.ru" in current_url or "yandex.ru" in current_url, \
+        assert any(domain in current_url for domain in EXPECTED_DOMAINS), \
             f"Новая вкладка не содержит ожидаемый URL: {current_url}"
         
         # Проверяем заголовок страницы и ожидаем загрузки заголовка страницы
