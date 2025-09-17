@@ -12,7 +12,7 @@ def driver():
     driver.quit()
 
 
-driver = webdriver.Firefox(options=options)
+
 # Для корректного отображения аргументов в параметризированном тесте
 def pytest_make_parametrize_id(val):
     return repr(val)

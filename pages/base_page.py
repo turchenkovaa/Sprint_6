@@ -31,8 +31,9 @@ class BasePage:
         """Поиск и ожидание элемента"""
         return self.wait_until_visible(locator, timeout=10)
 
-    def click_button(self, locator, retries=3, delay=0.5):
+    def click_button(self, locator, retries=3, wait_timeout=5):
         """Нажатие по элементу с fallback на JavaScript и обработкой stale элементов"""
+        wait = WebDriverWait(self.driver, wait_timeout)
         for _ in range(retries):
             try:
                 element = self.find_and_wait_locator(locator)
@@ -46,7 +47,11 @@ class BasePage:
                     pass  # Элемент устарел — retry
             except StaleElementReferenceException:
                 pass  # Элемент устарел — retry
-            time.sleep(delay)
+            # Вместо time.sleep(delay) — ожидаем, что элемент станет кликабельным
+            try:
+                wait.until(EC.element_to_be_clickable(locator))
+            except:
+                pass  # Если не стал кликабельным — просто продолжим retries
         raise Exception(f"Не удалось кликнуть по элементу с локатором {locator}")
 
     def send_keys_to_field(self, locator, text):
